@@ -1,7 +1,6 @@
 <?php
-//require php 7.0+
 $en = file('./en.txt');
-$zh = file('./zh.txt');
+$zh = file('./cn.txt');
 
 $new = 'r:\new.txt';
 
@@ -68,6 +67,16 @@ for (; $i < count($content); $i++) {
                     //注意！存在原文变更翻译内容要修改的情况，程序并无法自动识别！
                     //注意！存在原文变更翻译内容要修改的情况，程序并无法自动识别！
                     translation_file_append_dict($zh, $start, $end);
+
+                    //用于pass在线检查的辅助工具
+                    //检查<entry>
+                    translation_tag_check($enDict['entity'][$status_key], $zhDict['entity'][$status_key],
+                        function ($en, $zh) {
+                            return substr_count($en, '</entry>') === substr_count($zh, '</entry>');
+                        }, function ($key) {
+                            echo "warning: inconsistent <entry> in ", $key, PHP_EOL;
+                        }, $status_key);
+
                     for ($j = 0; $j < $end2 - $start2 - ($end - $start); $j++) {
                         //如果翻译比原文行数少，补空行来保证行号对齐
                         translation_file_append();
@@ -117,6 +126,16 @@ function translation_file_append_dict($content, $start, $end)
 {
     for ($i = $start; $i <= $end; $i++) {
         translation_file_append($content[$i]);
+    }
+}
+
+function translation_tag_check($en_index, $zh_index, $check_callback, $fail_callback, $fail_param)
+{
+    global $en, $zh;
+    $en_content = join(PHP_EOL, array_slice($en, $en_index[0], $en_index[1] - $en_index[0] + 1));
+    $zh_content = join(PHP_EOL, array_slice($zh, $zh_index[0], $zh_index[1] - $zh_index[0] + 1));
+    if ($check_callback($en_content, $zh_content) === false) {
+        $fail_callback($fail_param);
     }
 }
 
