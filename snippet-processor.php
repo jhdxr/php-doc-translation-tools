@@ -114,6 +114,17 @@ for (; $i < count($content); $i++) {
     }
 }
 
+translation_file_append();
+translation_file_append();
+translation_file_append('<!-- Todo: these should be removed -->');
+foreach($zhDict['entity'] as $k => $v) {
+	if(empty($enDict['entity'][$k])) { //不存在对应的en项
+		echo "warning: the $k entity was removed from en document",PHP_EOL;
+		//出于兼容目的，还是先把它留下
+		translation_file_append_dict($zh, $v[0], $v[1]);
+	}
+}
+
 exit('done');
 
 function translation_file_append($content = '')
